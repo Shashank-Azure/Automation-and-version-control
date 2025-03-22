@@ -27,21 +27,6 @@ catch {
     Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
 }
 
-# Create Resource Group (if it doesn't exist)
-try {
-    $rg = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
-    if (!$rg) {
-        New-AzResourceGroup -Name $resourceGroupName -Location $location
-        Write-Host "Resource group '$resourceGroupName' created in '$location'."
-    } else {
-        Write-Host "Resource group '$resourceGroupName' already exists."
-    }
-}
-catch {
-    Write-Error "Failed to create or verify resource group: $($_.Exception.Message)"
-    exit 1
-}
-
 # Create Network resources
 try {
     $publicIp = New-AzPublicIpAddress -Name $publicIpName -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Dynamic
