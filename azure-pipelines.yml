@@ -7,11 +7,14 @@ pool:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '18.x' # Updated to Node.js 18.x or higher
+    versionSpec: '18.x' # Or '20.x' for newer versions
   displayName: 'Install Node.js'
 
 - script: |
     #!/bin/bash
+    echo "Current working directory:"
+    pwd
+    cd $(System.DefaultWorkingDirectory)
     echo "Installing dependencies..."
     npm install
 
