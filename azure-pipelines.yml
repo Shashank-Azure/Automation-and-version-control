@@ -10,16 +10,25 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      # Get the commit ID of the previous commit
-      $previousCommit = git rev-parse HEAD^
+      # Check if HEAD^ exists
+      $previousCommit = git rev-parse HEAD^ 2>$null
 
-      # Get the diff between the current commit and the previous commit
-      $diff = git diff $previousCommit HEAD -- vm.ps1
+      if ($previousCommit) {
+          # HEAD^ exists, so proceed with diff
+          $diff = git diff $previousCommit HEAD -- vm.ps1
 
-      # Display the diff
-      if ($diff) {
-        Write-Host "Changes to vm.ps1:"
-        Write-Host $diff
+          if ($LASTEXITCODE -eq 0) {
+              if ($diff) {
+                  Write-Host "Changes to vm.ps1:"
+                  Write-Host $diff
+              } else {
+                  Write-Host "No changes to vm.ps1 in this commit."
+              }
+          } else {
+              Write-Error "Failed to get diff: $diff"
+              exit 1
+          }
       } else {
-        Write-Host "No changes to vm.ps1 in this commit."
+          # HEAD^ does not exist (first commit), so display a message
+          Write-Host "First commit detected. No previous commit to diff against."
       }
