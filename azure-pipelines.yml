@@ -2,33 +2,22 @@ trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest' # Or 'windows-latest' if you prefer
+  vmImage: 'windows-latest'
 
 steps:
 - task: PowerShell@2
-  displayName: 'Display Git Diff'
+  displayName: 'Check PowerShell Syntax'
+  inputs:
+    targetType: 'filePath'
+    filePath: 'vm.ps1'
+    arguments: '-ErrorAction Stop' # Ensures the script stops on the first error
+    errorActionPreference: 'stop'
+    pwsh: true # Use PowerShell Core for better compatibility
+
+- task: PowerShell@2
+  displayName: 'Run Script with -SyntaxCheck'
   inputs:
     targetType: 'inline'
-    script: |
-      # Check if HEAD^ exists
-      $previousCommit = git rev-parse HEAD^ 2>$null
-
-      if ($previousCommit) {
-          # HEAD^ exists, so proceed with diff
-          $diff = git diff $previousCommit HEAD -- vm.ps1
-
-          if ($LASTEXITCODE -eq 0) {
-              if ($diff) {
-                  Write-Host "Changes to vm.ps1:"
-                  Write-Host $diff
-              } else {
-                  Write-Host "No changes to vm.ps1 in this commit."
-              }
-          } else {
-              Write-Error "Failed to get diff: $diff"
-              exit 1
-          }
-      } else {
-          # HEAD^ does not exist (first commit), so display a message
-          Write-Host "First commit detected. No previous commit to diff against."
-      }
+    script: 'powershell -NoProfile -Command { Test-Path vm.ps1; if ($?) { powershell -NoProfile -SyntaxCheck vm.ps1 } }'
+    errorActionPreference: 'stop'
+    pwsh: true
