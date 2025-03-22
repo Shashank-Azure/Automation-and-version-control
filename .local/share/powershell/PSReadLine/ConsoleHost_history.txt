@@ -1,0 +1,159 @@
+clear
+pwshConnect-AzAccount -UseDeviceAuthentication
+clear
+Connect-AzAccount -UseDeviceAuthentication
+Install-Module -Name Az -AllowClobber -Scope CurrentUser
+Import-Module Az
+ Install-Module -Name Az -AllowClobber -Scope CurrentUser
+Update-Module Az
+Import-Module Az
+Connect-AzAccount -UseDeviceAuthentication
+pwsh ./vm.ps1
+clear
+Connect-AzAccount -UseDeviceAuthentication
+PWSH ./vm.ps1
+./vm.ps1
+vm.ps1
+vim vm.ps1
+rm vm.ps1
+rm storage.ps1
+rm NSG.ps1
+clear
+ls
+cd
+clear
+pwd
+clear
+ssh -i ~/.ssh/id_rsa.pem Shashankpnaidu@52.233.5.166
+Connect-AzAccount -UseDeviceAuthentication
+./vm.ps1
+./storage.ps1
+./NSG.ps1
+ls
+./Nsg.ps1
+vim Nsg.ps1
+clear
+Connect-AzAccount -UseDeviceAuthentication
+./vm.ps1
+vim vm.ps1
+./vm.ps1
+Get-AzVMImage -Location $location -PublisherName $imagePublisher -Offer $imageOffer -Sku $imageSku -ListAvailable
+Get-AzVMImage
+vim vm.ps1
+./vm.ps1
+vim vm.ps1
+./vm.ps1
+vim vm.ps1
+./vm.ps1
+vim storage.ps1
+./storage.ps1
+vim storage.ps1
+vim NSG.ps1
+./NSG.ps1
+vim NSG.ps1
+AllowSSH
+Allow SSh
+Allow SSH
+vim NSG.ps1
+vim webapp.ps1
+./webapp.ps1
+vim webapp.ps1
+./webapp
+./webapp.ps1
+Get-Module -ListAvailable -Name Az.StaticWebApp
+Install-Module -Name Az.StaticWebApp -AllowClobber -Scope CurrentUser
+Get-PSRepository
+Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+Install-Module -Name Az.StaticWebApp -AllowClobber -Scope CurrentUser
+Get-PSRepository
+$PSVersionTable.PSVersion
+Update-Module -Name Az -AllowClobber -Scope CurrentUser
+Az Update-Module -Name Az -AllowClobber -Scope CurrentUser
+./webapp.ps1
+Update-Module -Name Az -AllowClobber -Scope CurrentUser
+Update-Module -Name Az -Scope CurrentUser
+Publish-AzStaticWebApp
+Uninstall-Module -Name Az -AllVersions -ForceInstall-Module -Name Az -Scope CurrentUser -Force
+Uninstall-Module -Name Az -AllVersions -Force
+Install-Module -Name Az -Scope CurrentUser -Force
+Publish-AzStaticWebApp
+./storage.ps1
+connect-AzAccount -UseDeviceAuthentication
+./storage.ps1
+Connect-AzAccount -UseDeviceAuthentication
+clear
+connect-AzAccount -UseDeviceAuthentication
+clear
+connect-AzAccount -UseDeviceAuthentication
+ls
+./storage.ps1
+clear
+connect-AzAccount -UseDeviceAuthentication
+./vm.ps1
+clear
+Connect-AzAccount
+xdg-open https://www.bing.com 
+ping google.com
+clear
+connect-AzAccount -UseDeviceAuthentication
+update EnableLoginByWam
+clear
+Get-AzContext
+./vm.ps1
+Disconnect-AzAccount -Force
+connect-AzAccount -UseDeviceAuthentication
+clear
+connect-AzAccount -UseDeviceAuthentication
+./vm.ps1
+clear
+./storage.ps1
+vim storage.psa
+ls
+vim storage.ps1
+clear
+./storage.ps1
+vim storage.ps1
+clear
+./storage.ps1
+vim storage.ps1
+clear
+./storage.ps1
+clear
+./NSG.ps1
+clear
+vim webapp.ps1
+./webapp.ps1
+Update-Module -Name Az -Force
+Get-InstalledModule -Name Az.Storage
+vim webapp.ps1
+./webapp.ps1
+clear
+vim webapp.ps1
+rm webapp.ps1
+vim webapp.ps1
+./webapp.ps1
+clear
+rm webapp.ps1
+clear
+vim webapp.ps1
+./webapp.ps1
+vim webapp.ps1
+clear
+./webapp.ps1
+vim webapp.ps1
+clear
+./webapp.ps1
+rm webapp.ps1
+clear
+vim webapp.ps1
+./webapp.ps1
+vim webapp.ps1
+ls
+rm webapp.ps1
+clear
+ls
+clear
+ls
+exit
+clear
+exit
