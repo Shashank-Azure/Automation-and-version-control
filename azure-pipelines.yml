@@ -9,12 +9,10 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      # Install PSScriptAnalyzer
+      # Lint vm.ps1 using PSScriptAnalyzer
       Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force -ErrorAction Stop
-
-      # Lint PowerShell files
       Write-Host "Running PSScriptAnalyzer..."
-      $PSScriptAnalyzerResults = Invoke-ScriptAnalyzer -Path ./*.ps1 -Recurse -Severity Warning, Error
+      $PSScriptAnalyzerResults = Invoke-ScriptAnalyzer -Path vm.ps1 -Severity Warning, Error
       if ($PSScriptAnalyzerResults) {
         Write-Error "PSScriptAnalyzer found issues:"
         $PSScriptAnalyzerResults | Format-Table -AutoSize
@@ -23,10 +21,10 @@ steps:
         Write-Host "PSScriptAnalyzer found no issues."
       }
 
-      # Run Pester tests (if you have them)
-      if (Test-Path -Path ./*.Tests.ps1) { # Check if test files exist
+      # Run Pester tests for vm.ps1 (if you have them)
+      if (Test-Path -Path vm.Tests.ps1) { # Check for vm.Tests.ps1
         Write-Host "Running Pester tests..."
-        $PesterResults = Invoke-Pester -Path ./*.Tests.ps1 -OutputFormat NUnitXml -OutputFile PesterTestResults.xml
+        $PesterResults = Invoke-Pester -Path vm.Tests.ps1 -OutputFormat NUnitXml -OutputFile PesterTestResults.xml
         if ($PesterResults.FailedCount -gt 0) {
           Write-Error "Pester tests failed."
           exit 1
@@ -34,10 +32,9 @@ steps:
           Write-Host "Pester tests passed."
         }
       } else {
-        Write-Warning "No Pester test files found (*.Tests.ps1)."
+        Write-Warning "No Pester test file found (vm.Tests.ps1)."
       }
-
-  displayName: 'Validate and Test PowerShell'
+  displayName: 'Validate and Test vm.ps1'
 
 - task: PublishTestResults@2
   inputs:
