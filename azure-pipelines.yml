@@ -6,27 +6,20 @@ pool:
 
 steps:
 - task: PowerShell@2
-  displayName: 'Display Git Diffs'
+  displayName: 'Display Git Diff'
   inputs:
     targetType: 'inline'
     script: |
       # Get the commit ID of the previous commit
       $previousCommit = git rev-parse HEAD^
 
-      # Get the list of changed PowerShell files
-      $changedFiles = git diff --name-only $previousCommit HEAD -- '*.ps1'
+      # Get the diff between the current commit and the previous commit
+      $diff = git diff $previousCommit HEAD -- vm.ps1
 
-      # Display the diff for each changed PowerShell file
-      if ($changedFiles) {
-        foreach ($file in $changedFiles) {
-          Write-Host "Changes to $file:"
-          $diff = git diff $previousCommit HEAD -- $file
-          if ($diff) {
-            Write-Host $diff
-          } else {
-            Write-Host "No changes to $file."
-          }
-        }
+      # Display the diff
+      if ($diff) {
+        Write-Host "Changes to vm.ps1:"
+        Write-Host $diff
       } else {
-        Write-Host "No changes to PowerShell files in this commit."
+        Write-Host "No changes to vm.ps1 in this commit."
       }
