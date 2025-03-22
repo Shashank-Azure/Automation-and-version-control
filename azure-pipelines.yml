@@ -2,43 +2,47 @@ trigger:
 - main
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 steps:
 - task: PowerShell@2
   inputs:
     targetType: 'inline'
     script: |
-      # Lint vm.ps1 using PSScriptAnalyzer
-      Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force -ErrorAction Stop
-      Write-Host "Running PSScriptAnalyzer..."
-      $PSScriptAnalyzerResults = Invoke-ScriptAnalyzer -Path vm.ps1 -Severity Warning, Error
-      if ($PSScriptAnalyzerResults) {
-        Write-Error "PSScriptAnalyzer found issues:"
-        $PSScriptAnalyzerResults | Format-Table -AutoSize
+      # Install PowerShell Core
+      sudo apt-get update
+      sudo apt-get install -y powershell
+
+      # Install PSScriptAnalyzer
+      pwsh -Command "Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force"
+
+      # Lint PowerShell files
+      pwsh -Command "Invoke-ScriptAnalyzer -Path ./*.ps1 -Recurse -Severity Warning, Error"
+      if ($LASTEXITCODE -ne 0) {
+        echo "PSScriptAnalyzer found issues."
         exit 1
       } else {
-        Write-Host "PSScriptAnalyzer found no issues."
+        echo "PSScriptAnalyzer found no issues."
       }
 
-      # Run Pester tests for vm.ps1 (if you have them)
-      if (Test-Path -Path vm.Tests.ps1) { # Check for vm.Tests.ps1
-        Write-Host "Running Pester tests..."
-        $PesterResults = Invoke-Pester -Path vm.Tests.ps1 -OutputFormat NUnitXml -OutputFile PesterTestResults.xml
-        if ($PesterResults.FailedCount -gt 0) {
-          Write-Error "Pester tests failed."
+      # Run Pester tests (if you have them)
+      if (pwsh -Command "Test-Path -Path ./*.Tests.ps1") {
+        echo "Running Pester tests..."
+        pwsh -Command "Invoke-Pester -Path ./*.Tests.ps1 -OutputFormat NUnitXml -OutputFile PesterTestResults.xml"
+        if ($LASTEXITCODE -ne 0) {
+          echo "Pester tests failed."
           exit 1
         } else {
-          Write-Host "Pester tests passed."
+          echo "Pester tests passed."
         }
       } else {
-        Write-Warning "No Pester test file found (vm.Tests.ps1)."
+        echo "No Pester test files found (*.Tests.ps1)."
       }
-  displayName: 'Validate and Test vm.ps1'
+  displayName: 'Validate and Test PowerShell'
 
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'NUnit'
     testResultsFiles: 'PesterTestResults.xml'
-  condition: fileExists('PesterTestResults.xml')
+  condition: and(succeeded(), fileExists('PesterTestResults.xml'))
   displayName: 'Publish Pester Test Results'
