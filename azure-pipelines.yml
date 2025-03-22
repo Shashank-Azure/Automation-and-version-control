@@ -23,3 +23,20 @@ steps:
     targetType: 'inline'
     script: |
       Invoke-ScriptAnalyzer -Path . -ErrorAction Stop
+
+- task: PowerShell@2
+  displayName: 'Check PowerShell Syntax'
+  inputs:
+    targetType: 'inline'
+    script: |
+      Get-ChildItem -Path . -Filter *.ps1 -Recurse | ForEach-Object {
+        Write-Host "Checking syntax for $($_.FullName)"
+        try {
+          Invoke-Expression -Command (Get-Content -Path $_.FullName -Raw) -ErrorAction Stop
+          Write-Host "Syntax check passed for $($_.FullName)" -ForegroundColor Green
+        }
+        catch {
+          Write-Error "Syntax check failed for $($_.FullName): $($_.Exception.Message)"
+          exit 1 # Exit with a non-zero exit code to fail the pipeline
+        }
+      }
