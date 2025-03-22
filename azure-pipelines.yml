@@ -40,5 +40,5 @@ steps:
   inputs:
     testResultsFormat: 'NUnit'
     testResultsFiles: 'PesterTestResults.xml'
-  condition: and(succeeded(), fileExists('PesterTestResults.xml'))
+  condition: fileExists('PesterTestResults.xml'))
   displayName: 'Publish Pester Test Results'
