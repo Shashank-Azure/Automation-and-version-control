@@ -14,21 +14,7 @@ steps:
     script: 'Install-Module -Name Az -AllowClobber -Scope CurrentUser'
 
 - task: PowerShell@2
-  displayName: 'Check for errors in script output'
-  condition: succeededOrFailed() # Run regardless of the previous step's outcome
+  displayName: 'Run vm.ps1'
   inputs:
-    targetType: 'inline'
-    script: |
-      if ($LASTEXITCODE -ne 0) {
-          Write-Error "vm.ps1 exited with errors (exit code: $($LASTEXITCODE))."
-          Get-Content vm.ps1
-          exit 1
-      }
-      if (Get-Content vm.ps1 | Select-String -Pattern "error") {
-          Write-Error "Errors found in vm.ps1 output."
-          Get-Content vm.ps1
-          exit 1
-      }
-      else {
-          Write-Host "No errors found in vm.ps1 output."
-      }
+    targetType: 'filePath'
+    filePath: 'vm.ps1'
