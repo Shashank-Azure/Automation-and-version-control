@@ -27,15 +27,6 @@ catch {
     Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
 }
 
-# Connect to Azure
-try {
-    Connect-AzAccount
-}
-catch {
-    Write-Error "Failed to connect to Azure: $($_.Exception.Message)"
-    exit 1
-}
-
 # Create Resource Group (if it doesn't exist)
 try {
     $rg = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
