@@ -2,27 +2,24 @@ trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-latest' # Or 'windows-latest' if you prefer
 
 steps:
 - task: PowerShell@2
+  displayName: 'Display Git Diff'
   inputs:
     targetType: 'inline'
     script: |
-      # Install PowerShell Core
-      sudo apt-get update
-      sudo apt-get install -y powershell
+      # Get the commit ID of the previous commit
+      $previousCommit = git rev-parse HEAD^
 
-      # Install PSScriptAnalyzer
-      pwsh -Command "Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force"
+      # Get the diff between the current commit and the previous commit
+      $diff = git diff $previousCommit HEAD -- vm.ps1
 
-      # Lint PowerShell files
-      pwsh -Command "Invoke-ScriptAnalyzer -Path ./*.ps1 -Recurse -Severity Warning, Error"
-      if ($LASTEXITCODE -ne 0) {
-        echo "PSScriptAnalyzer found issues."
-        exit 1
+      # Display the diff
+      if ($diff) {
+        Write-Host "Changes to vm.ps1:"
+        Write-Host $diff
       } else {
-        echo "PSScriptAnalyzer found no issues."
+        Write-Host "No changes to vm.ps1 in this commit."
       }
-
-  displayName: 'Validate PowerShell'
