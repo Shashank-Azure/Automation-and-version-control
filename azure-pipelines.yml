@@ -1,4 +1,4 @@
-# Azure DevOps Pipeline Example for Linux vm.ps1 validation (Corrected and Bash-free)
+# Azure DevOps Pipeline Example for Linux vm.ps1 validation (Corrected)
 
 trigger:
 - main
@@ -14,7 +14,28 @@ steps:
     script: 'Install-Module -Name Az -AllowClobber -Scope CurrentUser'
 
 - task: PowerShell@2
-  displayName: 'Run vm.ps1'
+  displayName: 'Run vm.ps1 and capture errors'
   inputs:
     targetType: 'filePath'
     filePath: 'vm.ps1'
+  continueOnError: true # Allow pipeline to continue even if the script fails
+
+- task: PowerShell@2
+  displayName: 'Check for errors in script output'
+  condition: succeededOrFailed() # Run regardless of the previous step's outcome
+  inputs:
+    targetType: 'inline'
+    script: |
+      if ($LASTEXITCODE -ne 0) {
+          Write-Error "vm.ps1 exited with errors (exit code: $($LASTEXITCODE))."
+          Get-Content vm.ps1
+          exit 1
+      }
+      if (Get-Content vm.ps1 | Select-String -Pattern "error") {
+          Write-Error "Errors found in vm.ps1 output."
+          Get-Content vm.ps1
+          exit 1
+      }
+      else {
+          Write-Host "No errors found in vm.ps1 output."
+      }
