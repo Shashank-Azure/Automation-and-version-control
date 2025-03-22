@@ -1,4 +1,8 @@
-# Define variables
+# vm.ps1 - Create a Linux Virtual Machine in Azure using PowerShell
+# Based on: https://learn.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-powershell
+# Updated with provided variables
+
+# Parameters (Customize these for your environment)
 $resourceGroupName = "powershell_resource_group"
 $location = "East US" # Choose your desired location
 $vmName = "myLinuxVM"
@@ -14,23 +18,65 @@ $imageSku = "20.04-LTS" # Or another desired SKU, like ,18.04-LTS,20.04-LTS, 22.
 $imageVersion = "latest"
 $vmSize = "Standard_DS1_v2" # Choose your desired VM size
 
-# Create Resource Group
-New-AzResourceGroup -Name $resourceGroupName -Location $location
+# Install Azure Az module (if needed)
+try {
+    Get-Module -Name Az -ListAvailable -ErrorAction Stop
+}
+catch {
+    Write-Warning "Azure Az module not found. Installing..."
+    Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
+}
 
-# Create Virtual Network and Subnet
-$subnet = New-AzVirtualNetworkSubnetConfig -Name $subnetName -AddressPrefix "10.0.1.0/24"
-$vnet = New-AzVirtualNetwork -Name $vnetName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix "10.0.0.0/16" -Subnet $subnet
+# Connect to Azure
+try {
+    Connect-AzAccount
+}
+catch {
+    Write-Error "Failed to connect to Azure: $($_.Exception.Message)"
+    exit 1
+}
 
-# Create Public IP Address
-$publicIp = New-AzPublicIpAddress -Name $publicIpName -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Static -Sku Standard
+# Create Resource Group (if it doesn't exist)
+try {
+    $rg = Get-AzResourceGroup -Name $resourceGroupName -ErrorAction SilentlyContinue
+    if (!$rg) {
+        New-AzResourceGroup -Name $resourceGroupName -Location $location
+        Write-Host "Resource group '$resourceGroupName' created in '$location'."
+    } else {
+        Write-Host "Resource group '$resourceGroupName' already exists."
+    }
+}
+catch {
+    Write-Error "Failed to create or verify resource group: $($_.Exception.Message)"
+    exit 1
+}
 
-# Create Network Interface Card (NIC)
-$nic = New-AzNetworkInterface -Name $nicName -ResourceGroupName $resourceGroupName -Location $location -SubnetId $vnet.Subnets[0].Id -PublicIpAddressId $publicIp.Id
+# Create Network resources
+try {
+    $publicIp = New-AzPublicIpAddress -Name $publicIpName -ResourceGroupName $resourceGroupName -Location $location -AllocationMethod Dynamic
+    $vnet = New-AzVirtualNetwork -Name $vnetName -ResourceGroupName $resourceGroupName -Location $location -AddressPrefix 10.0.0.0/16
+    $subnet = New-AzVirtualNetworkSubnetConfig -Name $subnetName -AddressPrefix 10.0.1.0/24
+    $nic = New-AzNetworkInterface -Name $nicName -ResourceGroupName $resourceGroupName -Location $location -PublicIpAddressId $publicIp.Id -SubnetId $vnet.Subnets[0].Id
+}
+catch {
+    Write-Error "Failed to create network resources: $($_.Exception.Message)"
+    exit 1
+}
 
 # Create VM configuration
 $cred = New-Object System.Management.Automation.PSCredential($username, $password)
-$vmConfig = New-AzVMConfig -VMName $vmName -VMSize $vmSize | Set-AzVMOperatingSystem -Linux -ComputerName $vmName -Credential $cred | Set-AzVMSourceImage -PublisherName $imagePublisher -Offer $imageOffer -Sku $imageSku -Version latest | Add-AzVMNetworkInterface -Id $nic.Id
+$vmConfig = New-AzVMConfig -VMName $vmName -VMSize $vmSize |
+    Set-AzVMOperatingSystem -Linux -ComputerName $vmName -Credential $cred |
+    Set-AzVMSourceImage -PublisherName $imagePublisher -Offer $imageOffer -Sku $imageSku -Version $imageVersion
 
-# Create the VM
-New-AzVM -ResourceGroupName $resourceGroupName -Location $location -VM $vmConfig
+# Create VM
+try {
+    New-AzVM -ResourceGroupName $resourceGroupName -Location $location -NetworkInterface $nic -VM $vmConfig
+    Write-Host "Virtual machine '$vmName' created successfully."
+}
+catch {
+    Write-Error "Failed to create virtual machine: $($_.Exception.Message)"
+    exit 1
+}
 
+Write-Host "Script completed."
