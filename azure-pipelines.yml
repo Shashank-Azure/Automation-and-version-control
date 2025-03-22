@@ -1,0 +1,31 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '16.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    #!/bin/bash
+    echo "Installing dependencies..."
+    npm install
+
+    echo "Running ESLint..."
+    npx eslint .
+
+    echo "Running Jest tests..."
+    npm test
+
+    if [ $? -ne 0 ]; then
+      echo "Validation or testing failed."
+      exit 1
+    else
+      echo "Validation and testing successful."
+      exit 0
+    fi
+  displayName: 'Validation and Testing'
