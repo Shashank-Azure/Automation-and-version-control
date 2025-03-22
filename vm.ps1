@@ -10,7 +10,7 @@ $publicIpName = "myPublicIP"
 $nicName = "myNIC"
 $imagePublisher = "Canonical"
 $imageOffer = "UbuntuServer"
-$imageSku = "18.04-LTS" # Or another desired SKU, like 20.04-LTS, 22.04-LTS, etc.
+$imageSku = "20.04-LTS" # Or another desired SKU, like ,18.04-LTS,20.04-LTS, 22.04-LTS, etc.
 $imageVersion = "latest"
 $vmSize = "Standard_DS1_v2" # Choose your desired VM size
 
