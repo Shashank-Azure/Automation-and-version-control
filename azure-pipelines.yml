@@ -1,23 +1,39 @@
 trigger:
-- main
+  - main
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 steps:
-- task: PowerShell@2
-  displayName: 'Check PowerShell Syntax'
-  inputs:
-    targetType: 'filePath'
-    filePath: 'vm.ps1'
-    arguments: '-ErrorAction Stop' # Ensures the script stops on the first error
-    errorActionPreference: 'stop'
-    pwsh: true # Use PowerShell Core for better compatibility
+  - task: PowerShell@2
+    displayName: 'Check PowerShell Syntax'
+    inputs:
+      filePath: 'vm.ps1'
+      arguments: '-ErrorAction Stop'
+      errorActionPreference: 'stop'
+      pwsh: true # Ensure PowerShell Core is used
 
-- task: PowerShell@2
-  displayName: 'Run Script with -SyntaxCheck'
-  inputs:
-    targetType: 'inline'
-    script: 'powershell -NoProfile -Command { Test-Path vm.ps1; if ($?) { powershell -NoProfile -SyntaxCheck vm.ps1 } }'
-    errorActionPreference: 'stop'
-    pwsh: true
+  - task: PowerShell@2
+    displayName: 'Run Script with -SyntaxCheck'
+    inputs:
+      targetType: 'inline'
+      script: 'pwsh -NoProfile -Command { Test-Path vm.ps1; if ($?) { pwsh -NoProfile -SyntaxCheck vm.ps1 } }'
+      errorActionPreference: 'stop'
+      pwsh: true
+
+  - task: PowerShell@2
+    displayName: 'Basic Error Test (Example)'
+    inputs:
+      targetType: 'inline'
+      script: |
+        pwsh -NoProfile -Command {
+          # Example: Simulate an error condition
+          if ($false) {
+            Write-Error "Simulated Error"
+          } else {
+            Write-Host "No simulated error"
+          }
+          # You can add more tests based on your script's logic
+        }
+      errorActionPreference: 'stop'
+      pwsh: true
