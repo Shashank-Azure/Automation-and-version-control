@@ -2,35 +2,46 @@ trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-latest'
 
 steps:
-- task: NodeTool@0
+- task: PowerShell@2
   inputs:
-    versionSpec: '18.x' # Or '20.x' for newer versions
-  displayName: 'Install Node.js'
+    targetType: 'inline'
+    script: |
+      # Install PSScriptAnalyzer
+      Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force -ErrorAction Stop
 
-- script: |
-    #!/bin/bash
-    echo "Current working directory:"
-    pwd
-    cd $(System.DefaultWorkingDirectory)
-    echo "Current working directory after cd:"
-    pwd
-    echo "Installing dependencies..."
-    npm install
+      # Lint PowerShell files
+      Write-Host "Running PSScriptAnalyzer..."
+      $PSScriptAnalyzerResults = Invoke-ScriptAnalyzer -Path ./*.ps1 -Recurse -Severity Warning, Error
+      if ($PSScriptAnalyzerResults) {
+        Write-Error "PSScriptAnalyzer found issues:"
+        $PSScriptAnalyzerResults | Format-Table -AutoSize
+        exit 1
+      } else {
+        Write-Host "PSScriptAnalyzer found no issues."
+      }
 
-    echo "Running ESLint..."
-    npx eslint .
+      # Run Pester tests (if you have them)
+      if (Test-Path -Path ./*.Tests.ps1) { # Check if test files exist
+        Write-Host "Running Pester tests..."
+        $PesterResults = Invoke-Pester -Path ./*.Tests.ps1 -OutputFormat NUnitXml -OutputFile PesterTestResults.xml
+        if ($PesterResults.FailedCount -gt 0) {
+          Write-Error "Pester tests failed."
+          exit 1
+        } else {
+          Write-Host "Pester tests passed."
+        }
+      } else {
+        Write-Warning "No Pester test files found (*.Tests.ps1)."
+      }
 
-    echo "Running Jest tests..."
-    npm test
+  displayName: 'Validate and Test PowerShell'
 
-    if [ $? -ne 0 ]; then
-      echo "Validation or testing failed."
-      exit 1
-    else
-      echo "Validation and testing successful."
-      exit 0
-    fi
-  displayName: 'Validation and Testing'
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'NUnit'
+    testResultsFiles: 'PesterTestResults.xml'
+  condition: and(succeeded(), fileExists('PesterTestResults.xml'))
+  displayName: 'Publish Pester Test Results'
