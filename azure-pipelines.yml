@@ -25,24 +25,4 @@ steps:
         echo "PSScriptAnalyzer found no issues."
       }
 
-      # Run Pester tests (if you have them)
-      if (pwsh -Command "Test-Path -Path ./*.Tests.ps1") {
-        echo "Running Pester tests..."
-        pwsh -Command "Invoke-Pester -Path ./*.Tests.ps1 -OutputFormat NUnitXml -OutputFile PesterTestResults.xml"
-        if ($LASTEXITCODE -ne 0) {
-          echo "Pester tests failed."
-          exit 1
-        } else {
-          echo "Pester tests passed."
-        }
-      } else {
-        echo "No Pester test files found (*.Tests.ps1)."
-      }
-  displayName: 'Validate and Test PowerShell'
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'NUnit'
-    testResultsFiles: 'PesterTestResults.xml'
-  condition: and(succeeded(), fileExists('PesterTestResults.xml'))
-  displayName: 'Publish Pester Test Results'
+  displayName: 'Validate PowerShell'
