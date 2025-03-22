@@ -14,13 +14,6 @@ steps:
     script: 'Install-Module -Name Az -AllowClobber -Scope CurrentUser'
 
 - task: PowerShell@2
-  displayName: 'Run vm.ps1 and capture errors'
-  inputs:
-    targetType: 'filePath'
-    filePath: 'vm.ps1'
-  continueOnError: true # Allow pipeline to continue even if the script fails
-
-- task: PowerShell@2
   displayName: 'Check for errors in script output'
   condition: succeededOrFailed() # Run regardless of the previous step's outcome
   inputs:
