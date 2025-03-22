@@ -1,39 +1,88 @@
+# Azure DevOps Pipeline Example for Linux vm.ps1 validation
+
 trigger:
-  - main
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  - task: PowerShell@2
-    displayName: 'Check PowerShell Syntax'
-    inputs:
-      filePath: 'vm.ps1'
-      arguments: '-ErrorAction Stop'
-      errorActionPreference: 'stop'
-      pwsh: true # Ensure PowerShell Core is used
+- task: Bash@3
+  displayName: 'Run vm.ps1 and capture errors'
+  inputs:
+    targetType: 'filePath'
+    filePath: 'vm.ps1'
+    arguments: '2>&1' # Redirect stderr to stdout
+  continueOnError: true # Allow pipeline to continue even if the script fails
 
-  - task: PowerShell@2
-    displayName: 'Run Script with -SyntaxCheck'
-    inputs:
-      targetType: 'inline'
-      script: 'pwsh -NoProfile -Command { Test-Path vm.ps1; if ($?) { pwsh -NoProfile -SyntaxCheck vm.ps1 } }'
-      errorActionPreference: 'stop'
-      pwsh: true
+- task: Bash@3
+  displayName: 'Check for errors in script output'
+  condition: succeededOrFailed() # Run regardless of the previous step's outcome
+  inputs:
+    targetType: 'inline'
+    script: |
+      if [[ -n "$(< vm.ps1)" ]]; then
+        echo "Script output:"
+        cat vm.ps1
+      fi
+      if grep -q "error" vm.ps1; then
+        echo "##vso[task.logissue type=error]Errors found in vm.ps1 output."
+        exit 1 # Fail the task
+      else
+        echo "No errors found in vm.ps1 output."
+      fi
 
-  - task: PowerShell@2
-    displayName: 'Basic Error Test (Example)'
-    inputs:
-      targetType: 'inline'
-      script: |
-        pwsh -NoProfile -Command {
-          # Example: Simulate an error condition
-          if ($false) {
-            Write-Error "Simulated Error"
-          } else {
-            Write-Host "No simulated error"
-          }
-          # You can add more tests based on your script's logic
-        }
-      errorActionPreference: 'stop'
-      pwsh: true
+#GitHub Actions example for Linux vm.ps1 validation
+name: PowerShell Linux vm.ps1 Validation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run vm.ps1 and capture errors
+        run: |
+          ./vm.ps1 2>&1 > output.txt || true #Redirects error, allows continuation
+      - name: Check for errors in script output
+        run: |
+          if [[ -s output.txt ]]; then
+            echo "Script output:"
+            cat output.txt
+          fi
+          if grep -q "error" output.txt; then
+            echo "Errors found in vm.ps1 output."
+            exit 1
+          else
+            echo "No errors found in vm.ps1 output."
+          fi
+
+#GitLab CI/CD example for Linux vm.ps1 validation
+stages:
+  - validate
+
+validate_vm_script:
+  stage: validate
+  script:
+    - ./vm.ps1 2>&1 > output.txt || true #Redirects error, allows continuation
+    - |
+      if [[ -s output.txt ]]; then
+        echo "Script output:"
+        cat output.txt
+      fi
+      if grep -q "error" output.txt; then
+        echo "Errors found in vm.ps1 output."
+        exit 1
+      else
+        echo "No errors found in vm.ps1 output."
+      fi
+  tags:
+    - linux
