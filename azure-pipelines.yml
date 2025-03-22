@@ -1,10 +1,10 @@
-# Azure DevOps Pipeline Example for Linux vm.ps1 validation (Corrected)
+# azure-pipelines.yml
 
 trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-latest' # Or another Linux image with PowerShell Core
 
 steps:
 - task: PowerShell@2
